@@ -41,8 +41,14 @@ function parametros(req) {
   const p = { ...req.query };
   const b = req.body;
   if (typeof b === 'string' && b.trim()) {
-    // Corpo em texto puro: tenta JSON; senão assume que é a própria URL.
-    try { Object.assign(p, JSON.parse(b)); } catch { p.url = p.url || b.trim(); }
+    const t = b.trim();
+    if (t[0] === '<' || /__NEXT_DATA__/.test(t)) {
+      // Corpo em texto puro com o código da página: usa direto como HTML.
+      p.html = t;
+    } else {
+      // Senão tenta JSON; se não for, assume que é a própria URL.
+      try { Object.assign(p, JSON.parse(t)); } catch { p.url = p.url || t; }
+    }
   } else if (b && typeof b === 'object') {
     Object.assign(p, b);
   }
